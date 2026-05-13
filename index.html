@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bainves - Kuis Berhadiah</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Supabase SDK -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2">
+  </script>
+</head>
+<body>
+
+  <!-- ========== LANDING PAGE ========== -->
+  <div id="landingPage" class="page active">
+    <div class="landing-hero">
+      <div class="landing-overlay"></div>
+      <div class="landing-content">
+        <div class="logo-large">🏆 BAINVES</div>
+        <h1>Dapatkan Hadiah Mewah!</h1>
+        <p class="landing-subtitle">Mobil, Honda, Sepeda Listrik, Topi, Kacamata, Baju, Celana, Sepatu, Sandal <br/> hingga Saldo E-Wallet 50rb - Jutaan Rupiah!</p>
+        <div class="prize-grid">
+          <div class="prize-item"><span>🚗</span>Mobil</div>
+          <div class="prize-item"><span>🏍️</span>Honda</div>
+          <div class="prize-item"><span>🛴</span>Sepeda Listrik</div>
+          <div class="prize-item"><span>🧢</span>Topi</div>
+          <div class="prize-item"><span>👓</span>Kacamata</div>
+          <div class="prize-item"><span>👕</span>Baju</div>
+          <div class="prize-item"><span>👖</span>Celana</div>
+          <div class="prize-item"><span>👟</span>Sepatu</div>
+          <div class="prize-item"><span>🩴</span>Sandal</div>
+          <div class="prize-item"><span>💰</span>Saldo E-Wallet</div>
+        </div>
+        <div class="landing-actions">
+          <button class="btn btn-primary" onclick="showAuth('login')">Masuk</button>
+          <button class="btn btn-secondary" onclick="showAuth('register')">Daftar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== AUTH PAGE ========== -->
+  <div id="authPage" class="page">
+    <div class="auth-container">
+      <div class="auth-box">
+        <button class="back-btn" onclick="hideAuth()">← Kembali</button>
+        <h2 id="authTitle">Masuk</h2>
+        <form id="authForm" onsubmit="handleAuth(event)">
+          <div id="registerFields" style="display:none;">
+            <input type="text" id="regName" placeholder="Nama Lengkap" required />
+            <input type="text" id="regPhone" placeholder="Nomor WhatsApp" required />
+          </div>
+          <input type="email" id="authEmail" placeholder="Email" required />
+          <input type="password" id="authPassword" placeholder="Kata Sandi" required minlength="6" />
+          <input type="text" id="regReferral" placeholder="Kode Referral (opsional)" style="display:none;" />
+          <button type="submit" class="btn btn-primary" id="authBtn">Masuk</button>
+        </form>
+        <p class="auth-switch">
+          <span id="authSwitchText">Belum punya akun?</span>
+          <a href="#" onclick="toggleAuthMode()" id="authSwitchLink">Daftar</a>
+        </p>
+        <div id="authError" class="error-msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MAIN APP (after login) ========== -->
+  <div id="appMain" class="page">
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="header-left">
+        <span class="logo-text">BAINVES</span>
+      </div>
+      <div class="header-right">
+        <span class="coin-display">🪙 <span id="userCoins">0</span></span>
+        <button class="icon-btn" onclick="showNotif()">🔔<span id="notifBadge" class="badge hidden">0</span></button>
+      </div>
+    </header>
+
+    <!-- CONTENT PAGES -->
+    <main class="app-content">
+
+      <!-- BERANDA / HOME -->
+      <div id="pageHome" class="tab-page active">
+        <div class="welcome-banner">
+          <h3>Halo, <span id="userNameHome">Pengguna</span>! 👋</h3>
+          <p>Ikuti kuis dan dapatkan koin untuk ditukarkan!</p>
+        </div>
+
+        <!-- Paket -->
+        <div class="section">
+          <h3>Paket Berlangganan</h3>
+          <div class="paket-grid">
+            <div class="paket-card" onclick="beliPaket('bulan', 15000, 1)">
+              <div class="paket-price">Rp15.000</div>
+              <div class="paket-durasi">1 Bulan</div>
+              <button class="btn btn-small">Beli</button>
+            </div>
+            <div class="paket-card" onclick="beliPaket('bulan', 60000, 6)">
+              <div class="paket-price">Rp60.000</div>
+              <div class="paket-durasi">6 Bulan</div>
+              <button class="btn btn-small">Beli</button>
+            </div>
+            <div class="paket-card" onclick="beliPaket('tahun', 100000, 12)">
+              <div class="paket-price">Rp100.000</div>
+              <div class="paket-durasi">1 Tahun</div>
+              <button class="btn btn-small">Beli</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Daftar Hadiah -->
+        <div class="section">
+          <h3>🎁 Tukar Hadiah</h3>
+          <div id="hadiahList" class="hadiah-grid"></div>
+        </div>
+      </div>
+
+      <!-- RIWAYAT -->
+      <div id="pageRiwayat" class="tab-page">
+        <h2>Riwayat</h2>
+        <div class="riwayat-tabs">
+          <button class="tab-riwayat active" onclick="switchRiwayat('kuis')">Soal Terjawab</button>
+          <button class="tab-riwayat" onclick="switchRiwayat('hadiah')">Hadiah Ditukar</button>
+          <button class="tab-riwayat" onclick="switchRiwayat('poin')">Poin Hari Ini</button>
+        </div>
+        <div id="riwayatKuis" class="riwayat-content active"></div>
+        <div id="riwayatHadiah" class="riwayat-content"></div>
+        <div id="riwayatPoin" class="riwayat-content"></div>
+      </div>
+
+      <!-- KUIS -->
+      <div id="pageKuis" class="tab-page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <h2>📝 Kuis</h2>
+          <button class="btn btn-small" onclick="loadSoal()" style="background:linear-gradient(135deg,#6a11cb,#2575fc);color:#fff;">
+            🤖 Generate Soal
+          </button>
+        </div>
+        <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:15px;">
+          Soal dibuat otomatis oleh <strong>Gemini AI</strong> — Setiap jawaban benar dapat +10 koin! 🪙
+        </p>
+        <div id="quizContainer">
+          <div id="currentQuiz">
+            <p class="quiz-question" id="quizQuestion">Klik "Generate Soal" untuk memulai kuis dari Gemini AI 🚀</p>
+            <div class="quiz-options" id="quizOptions">
+              <div style="text-align:center;padding:30px;color:var(--text-light);">
+                <div style="font-size:3rem;margin-bottom:15px;">🤖</div>
+                <p>Tekan tombol di atas untuk AI membuatkan 5 soal untuk Anda!</p>
+              </div>
+            </div>
+          </div>
+          <div id="quizHistory"></div>
+        </div>
+      </div>
+
+      <!-- AFFILIATE -->
+      <div id="pageAffiliate" class="tab-page">
+        <h2>🔗 Affiliate</h2>
+        <div class="affiliate-card">
+          <div class="aff-saldo">
+            <span>Saldo Affiliate</span>
+            <span class="saldo-nominal" id="affSaldo">Rp0</span>
+          </div>
+          <button class="btn btn-primary" onclick="tarikSaldo()">Penarikan Saldo</button>
+        </div>
+        <div class="section">
+          <h3>Link Affiliate Anda</h3>
+          <div class="aff-link-box">
+            <input type="text" id="affLink" readonly />
+            <button class="btn btn-small" onclick="copyAffLink()">Salin</button>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><span>Klik Link</span><span id="affClicks">0</span></div>
+          <div class="stat-card"><span>Bergabung</span><span id="affJoins">0</span></div>
+          <div class="stat-card"><span>Tingkat Anda</span><span id="affLevel">1</span></div>
+          <div class="stat-card"><span>Tim</span><span id="affTeam">0</span></div>
+        </div>
+        <div class="section">
+          <h3>Network Affiliate (10 Level)</h3>
+          <div id="affNetwork"></div>
+        </div>
+      </div>
+
+      <!-- PROFIL -->
+      <div id="pageProfil" class="tab-page">
+        <h2>Profil</h2>
+        <div class="profile-card">
+          <div class="profile-photo" onclick="editPhoto()">
+            <img id="profilePhoto" src="https://ui-avatars.com/api/?name=User&background=4cc9f0&color=fff" alt="Foto" />
+            <span class="edit-overlay">📷</span>
+          </div>
+          <div class="profile-info">
+            <p><strong>Nama:</strong> <span id="profName">-</span></p>
+            <p><strong>Email:</strong> <span id="profEmail">-</span></p>
+            <p><strong>WhatsApp:</strong> <span id="profPhone">-</span></p>
+          </div>
+        </div>
+        <div class="profile-menu">
+          <button class="menu-item" onclick="editField('nama')">✏️ Edit Nama</button>
+          <button class="menu-item" onclick="editField('sandi')">🔑 Edit Kata Sandi</button>
+          <button class="menu-item" onclick="editField('wa')">📱 Edit Nomor WhatsApp</button>
+        </div>
+        <div class="profile-settings">
+          <div class="setting-row">
+            <span>🌙 Mode Gelap</span>
+            <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"><span class="slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <span>🌐 Bahasa</span>
+            <select id="langSelect" onchange="changeLang(this.value)">
+              <option value="id">Indonesia</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-danger" onclick="logout()">🚪 Keluar</button>
+      </div>
+    </main>
+
+    <!-- FOOTER NAV -->
+    <nav class="app-footer">
+      <button class="nav-item active" onclick="navigate('Home')">
+        <span>🏠</span><span>Beranda</span>
+      </button>
+      <button class="nav-item" onclick="navigate('Riwayat')">
+        <span>📋</span><span>Riwayat</span>
+      </button>
+      <button class="nav-item" onclick="navigate('Kuis')">
+        <span>📝</span><span>Kuis</span>
+      </button>
+      <button class="nav-item" onclick="navigate('Affiliate')">
+        <span>🔗</span><span>Affiliate</span>
+      </button>
+      <button class="nav-item" onclick="navigate('Profil')">
+        <span>👤</span><span>Profil</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ========== MODAL ========== -->
+  <div id="modalOverlay" class="modal-overlay hidden" onclick="closeModal(event)">
+    <div class="modal-box" id="modalBox">
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- NOTIF DRAWER -->
+  <div id="notifDrawer" class="notif-drawer hidden">
+    <div class="notif-header">
+      <h3>Notifikasi</h3>
+      <button onclick="closeNotif()">×</button>
+    </div>
+    <div id="notifList"></div>
+  </div>
+
+  <script src="js/supabase-config.js"></script>
+  <script src="js/gemini-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/affiliate.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
